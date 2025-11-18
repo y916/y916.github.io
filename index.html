@@ -189,130 +189,15 @@
 <body>
     <div class="container">
         <header>
-            <h1>✨ 欢迎来到我的个人空间</h1>
+            <h1>✨ 我的个人空间</h1>
             <p>记录生活，分享技术，探索世界</p>
         </header>
 
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="🔍 搜索文章标题或内容...">
-        </div>
-
-        <div class="categories" id="categories"></div>
-
-        <div class="loading" id="loading" style="display: none;">正在加载文章...</div>
-        <div class="no-results" id="noResults">暂无相关内容</div>
-
-        <div class="blog-grid" id="blogGrid"></div>
+        <div class="no-results">暂无相关内容</div>
 
         <footer>
-            <p>&copy; 2025 我的个人博客 | 用心创作每一篇文章</p>
+            <p>&copy; 2025 我的个人博客 | <a href="tools/imageviewer.html" style="color: white; text-decoration: none; border-bottom: 1px solid white;">图片查看器</a></p>
         </footer>
     </div>
-
-    <script>
-        let allPosts = [];
-        let currentCategory = 'all';
-
-        // 读取/pages文件夹下的文件结构
-        // 需要后端支持或使用构建工具生成文件列表
-        const postsData = [];
-
-        // 初始化
-        function init() {
-            allPosts = postsData;
-            renderCategories();
-            renderPosts(allPosts);
-            document.getElementById('loading').style.display = 'none';
-        }
-
-        // 渲染分类标签
-        function renderCategories() {
-            const categories = ['all', ...new Set(allPosts.map(post => post.category))];
-            const categoriesContainer = document.getElementById('categories');
-            
-            categoriesContainer.innerHTML = categories.map(cat => 
-                `<div class="category-tag ${cat === 'all' ? 'active' : ''}" onclick="filterByCategory('${cat}')">
-                    ${cat === 'all' ? '全部' : cat}
-                </div>`
-            ).join('');
-        }
-
-        // 渲染文章列表
-        function renderPosts(posts) {
-            const grid = document.getElementById('blogGrid');
-            const noResults = document.getElementById('noResults');
-            
-            if (posts.length === 0) {
-                grid.style.display = 'none';
-                noResults.style.display = 'block';
-                return;
-            }
-
-            grid.style.display = 'grid';
-            noResults.style.display = 'none';
-            
-            grid.innerHTML = posts.map(post => `
-                <div class="blog-card" onclick="openPost('${post.path}')">
-                    <img src="${post.image}" alt="${post.title}" onerror="this.src='/images/default.jpg'">
-                    <div class="blog-card-content">
-                        <h3>${post.title}</h3>
-                        <div class="meta">
-                            <span>📅 ${post.date}</span>
-                            <span>📁 ${post.category}</span>
-                        </div>
-                        <p class="excerpt">${post.excerpt}</p>
-                        <div class="tags">
-                            ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // 按分类筛选
-        function filterByCategory(category) {
-            currentCategory = category;
-            
-            // 更新分类标签状态
-            document.querySelectorAll('.category-tag').forEach(tag => {
-                tag.classList.remove('active');
-            });
-            event.target.classList.add('active');
-            
-            // 筛选文章
-            const filtered = category === 'all' 
-                ? allPosts 
-                : allPosts.filter(post => post.category === category);
-            
-            renderPosts(filtered);
-        }
-
-        // 搜索功能
-        document.getElementById('searchInput').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            
-            let filtered = currentCategory === 'all' 
-                ? allPosts 
-                : allPosts.filter(post => post.category === currentCategory);
-            
-            if (searchTerm) {
-                filtered = filtered.filter(post => 
-                    post.title.toLowerCase().includes(searchTerm) ||
-                    post.excerpt.toLowerCase().includes(searchTerm) ||
-                    post.tags.some(tag => tag.toLowerCase().includes(searchTerm))
-                );
-            }
-            
-            renderPosts(filtered);
-        });
-
-        // 打开文章页面
-        function openPost(path) {
-            window.location.href = path.replace('.md', '.html');
-        }
-
-        // 页面加载完成后初始化
-        window.addEventListener('DOMContentLoaded', init);
-    </script>
 </body>
 </html>
