@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的个人空间</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+        }
+
+        header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .search-box {
+            max-width: 600px;
+            margin: 30px auto;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            outline: none;
+        }
+
+        .search-box input:focus {
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        .categories {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .category-tag {
+            padding: 8px 20px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .category-tag:hover, .category-tag.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .blog-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .blog-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            cursor: pointer;
+        }
+
+        .blog-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+        }
+
+        .blog-card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .blog-card-content {
+            padding: 25px;
+        }
+
+        .blog-card h3 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #667eea;
+        }
+
+        .blog-card .meta {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+            color: #666;
+        }
+
+        .blog-card .excerpt {
+            color: #555;
+            margin-bottom: 15px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .blog-card .tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .tag {
+            padding: 5px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #667eea;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 60px 20px;
+            color: white;
+            font-size: 1.2em;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: white;
+            margin-top: 60px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            .blog-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>✨ 欢迎来到我的个人空间</h1>
+            <p>记录生活，分享技术，探索世界</p>
+        </header>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="🔍 搜索文章标题或内容...">
+        </div>
+
+        <div class="categories" id="categories"></div>
+
+        <div class="loading" id="loading" style="display: none;">正在加载文章...</div>
+        <div class="no-results" id="noResults">暂无相关内容</div>
+
+        <div class="blog-grid" id="blogGrid"></div>
+
+        <footer>
+            <p>&copy; 2025 我的个人博客 | 用心创作每一篇文章</p>
+        </footer>
+    </div>
+
+    <script>
+        let allPosts = [];
+        let currentCategory = 'all';
+
+        // 读取/pages文件夹下的文件结构
+        // 需要后端支持或使用构建工具生成文件列表
+        const postsData = [];
+
+        // 初始化
+        function init() {
+            allPosts = postsData;
+            renderCategories();
+            renderPosts(allPosts);
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // 渲染分类标签
+        function renderCategories() {
+            const categories = ['all', ...new Set(allPosts.map(post => post.category))];
+            const categoriesContainer = document.getElementById('categories');
+            
+            categoriesContainer.innerHTML = categories.map(cat => 
+                `<div class="category-tag ${cat === 'all' ? 'active' : ''}" onclick="filterByCategory('${cat}')">
+                    ${cat === 'all' ? '全部' : cat}
+                </div>`
+            ).join('');
+        }
+
+        // 渲染文章列表
+        function renderPosts(posts) {
+            const grid = document.getElementById('blogGrid');
+            const noResults = document.getElementById('noResults');
+            
+            if (posts.length === 0) {
+                grid.style.display = 'none';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            grid.style.display = 'grid';
+            noResults.style.display = 'none';
+            
+            grid.innerHTML = posts.map(post => `
+                <div class="blog-card" onclick="openPost('${post.path}')">
+                    <img src="${post.image}" alt="${post.title}" onerror="this.src='/images/default.jpg'">
+                    <div class="blog-card-content">
+                        <h3>${post.title}</h3>
+                        <div class="meta">
+                            <span>📅 ${post.date}</span>
+                            <span>📁 ${post.category}</span>
+                        </div>
+                        <p class="excerpt">${post.excerpt}</p>
+                        <div class="tags">
+                            ${post.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 按分类筛选
+        function filterByCategory(category) {
+            currentCategory = category;
+            
+            // 更新分类标签状态
+            document.querySelectorAll('.category-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 筛选文章
+            const filtered = category === 'all' 
+                ? allPosts 
+                : allPosts.filter(post => post.category === category);
+            
+            renderPosts(filtered);
+        }
+
+        // 搜索功能
+        document.getElementById('searchInput').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            
+            let filtered = currentCategory === 'all' 
+                ? allPosts 
+                : allPosts.filter(post => post.category === currentCategory);
+            
+            if (searchTerm) {
+                filtered = filtered.filter(post => 
+                    post.title.toLowerCase().includes(searchTerm) ||
+                    post.excerpt.toLowerCase().includes(searchTerm) ||
+                    post.tags.some(tag => tag.toLowerCase().includes(searchTerm))
+                );
+            }
+            
+            renderPosts(filtered);
+        });
+
+        // 打开文章页面
+        function openPost(path) {
+            window.location.href = path.replace('.md', '.html');
+        }
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
